@@ -1,4 +1,4 @@
 .idea/
 bin/
 
-cmd/app/app.go
+cmd/app/app
