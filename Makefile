@@ -11,9 +11,10 @@ $(BIN)/:
 clean: $(BIN)/
 
 build: clean
-	@ go build -o ./bin cmd/app/app.go
+	go build -o ./bin cmd/app/app.go
+	cp config.yaml ./bin/config.yaml
 
 run:
-	@ ./bin/app
+	./bin/app
 
 buildAndRun: build run
