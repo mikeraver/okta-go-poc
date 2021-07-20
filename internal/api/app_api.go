@@ -2,15 +2,18 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 	"poc/internal/model"
+	"time"
 )
 
 func RegisterAppApi(router *mux.Router) {
 	router.HandleFunc("/", homeHandler)
 	router.HandleFunc("/health", healthHandler)
+
+	handlers.CORS()
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -27,10 +30,10 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("HomeHandler executed")
 	w.WriteHeader(http.StatusOK)
 	responseData := model.HttpResponse{
 		Success: true,
+		Timestamp: time.Now(),
 		Message: "alive",
 		Data:    "server01",
 	}

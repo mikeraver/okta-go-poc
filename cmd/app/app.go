@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 	"log"
@@ -16,18 +17,7 @@ func init() {
 
 func main() {
 	log.Println("Building application server...")
-
-	router := mux.NewRouter()
-	registerApis(router)
-
-	log.Println("Starting server on port 8080")
-	srv := &http.Server{
-		Handler:      router,
-		Addr:         "127.0.0.1:8080",
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
-	}
-	log.Fatal(srv.ListenAndServe())
+	buildAndRunServer()
 }
 
 func initAppConfig() {
@@ -45,6 +35,29 @@ func initAppConfig() {
 	log.Printf("ClientId: %v\n", viper.Get("ClientId"))
 	log.Printf("ClientSecret: %v\n", viper.Get("ClientSecret"))
 	log.Printf("Issuer: %v\n", viper.Get("Issuer"))
+}
+
+func buildAndRunServer() {
+	router := mux.NewRouter()
+	registerApis(router)
+
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+	handlers.CORS(originsOk)(router)
+
+	//router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	//	w.Write([]byte("This is a catch-all route"))
+	//})
+	//logHandler := handlers.LoggingHandler(os.Stdout, router)
+
+	log.Println("Starting server on port 8080")
+	srv := &http.Server{
+		Handler:      router,
+		Addr:         "127.0.0.1:8080",
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+	//log.Fatal(srv.ListenAndServe(), logHandler)
+	log.Fatal(srv.ListenAndServe())
 }
 
 func registerApis(router *mux.Router) {

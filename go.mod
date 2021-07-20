@@ -3,6 +3,7 @@ module poc
 go 1.16
 
 require (
+	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/okta/okta-jwt-verifier-golang v1.1.1 // indirect
