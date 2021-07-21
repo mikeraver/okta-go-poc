@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/viper"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"poc/internal/model"
@@ -36,9 +37,14 @@ func RegisterAuthApi(router *mux.Router) {
 }
 
 func generateState() string {
-	// Generate a random byte array for state paramter
+	// Generate a random byte array for state parameter
 	b := make([]byte, 16)
-	rand.Read(b)
+
+	_, err := rand.Read(b)
+	if err != nil {
+		panic(err)
+	}
+
 	return hex.EncodeToString(b)
 }
 
@@ -60,13 +66,18 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		Nonce:           nonce,
 	}
 
-	tpl.ExecuteTemplate(w, "login.gohtml", data)
+	if err := tpl.ExecuteTemplate(w, "login.gohtml", data); err != nil {
+		panic(err)
+	}
 }
 
 func authorizationCodeHandler(w http.ResponseWriter, r *http.Request) {
 	// Check the state that was returned in the query string is the same as the above state
 	if r.URL.Query().Get("state") != state {
-		fmt.Fprintln(w, "The state was not as expected")
+		_, err := fmt.Fprintln(w, "The state was not as expected")
+		if err != nil {
+			panic(err)
+		}
 		return
 	}
 	// Make sure the code was provided
@@ -113,7 +124,7 @@ func exchangeCode(code string, r *http.Request) model.Exchange {
 	q.Set("code", code)
 	q.Add("redirect_uri", viper.GetString("RedirectUrl"))
 
-	url := viper.GetString("Issuer") + "/v1/token?" + q.Encode()
+	url := viper.GetString("Issuer") + "/oauth2/v1/token?" + q.Encode()
 
 	req, _ := http.NewRequest("POST", url, bytes.NewReader([]byte("")))
 	h := req.Header
@@ -126,9 +137,15 @@ func exchangeCode(code string, r *http.Request) model.Exchange {
 	client := &http.Client{}
 	resp, _ := client.Do(req)
 	body, _ := ioutil.ReadAll(resp.Body)
+
+	bodyStr := string(body)
+	log.Println(bodyStr)
+
 	defer resp.Body.Close()
 	var exchange model.Exchange
-	json.Unmarshal(body, &exchange)
+	if err := json.Unmarshal(body, &exchange); err != nil {
+		panic(err)
+	}
 
 	return exchange
 }
@@ -152,8 +169,14 @@ func getProfileData(r *http.Request) map[string]string {
 	client := &http.Client{}
 	resp, _ := client.Do(req)
 	body, _ := ioutil.ReadAll(resp.Body)
+
+	bodyStr := string(body)
+	log.Println(bodyStr)
+
 	defer resp.Body.Close()
-	json.Unmarshal(body, &m)
+	if err := json.Unmarshal(body, &m); err != nil {
+		panic(err)
+	}
 
 	return m
 }
@@ -171,7 +194,7 @@ func isAuthenticated(r *http.Request) bool {
 func verifyToken(t string) (*verifier.Jwt, error) {
 	tv := map[string]string{}
 	tv["nonce"] = nonce
-	tv["aud"] = viper.GetString("iClientId")
+	tv["aud"] = viper.GetString("ClientId")
 	jv := verifier.JwtVerifier{
 		Issuer:           viper.GetString("Issuer"),
 		ClaimsToValidate: tv,
