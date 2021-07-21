@@ -111,7 +111,7 @@ func exchangeCode(code string, r *http.Request) model.Exchange {
 	q := r.URL.Query()
 	q.Add("grant_type", "authorization_code")
 	q.Set("code", code)
-	q.Add("redirect_uri", "http://67.182.243.65/authorization-code/callback")
+	q.Add("redirect_uri", "http://98.202.88.204:8080/authorization-code/callback")
 
 	url := os.Getenv("ISSUER") + "/v1/token?" + q.Encode()
 
