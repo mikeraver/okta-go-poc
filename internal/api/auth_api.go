@@ -15,7 +15,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"poc/internal/model"
 	"poc/internal/util"
 )
@@ -54,6 +53,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		Profile:         getProfileData(r),
 		IsAuthenticated: isAuthenticated(r),
 		BaseUrl:         baseUrl,
+		RedirectUri:     viper.GetString("RedirectUrl"),
 		ClientId:        viper.GetString("ClientId"),
 		Issuer:          viper.GetString("Issuer"),
 		State:           state,
@@ -106,14 +106,14 @@ func authorizationCodeHandler(w http.ResponseWriter, r *http.Request) {
 
 func exchangeCode(code string, r *http.Request) model.Exchange {
 	authHeader := base64.StdEncoding.EncodeToString(
-		[]byte(os.Getenv("CLIENT_ID") + ":" + os.Getenv("CLIENT_SECRET")))
+		[]byte(viper.GetString("ClientId") + ":" + viper.GetString("ClientSecret")))
 
 	q := r.URL.Query()
 	q.Add("grant_type", "authorization_code")
 	q.Set("code", code)
-	q.Add("redirect_uri", "http://98.202.88.204:8080/authorization-code/callback")
+	q.Add("redirect_uri", viper.GetString("RedirectUrl"))
 
-	url := os.Getenv("ISSUER") + "/v1/token?" + q.Encode()
+	url := viper.GetString("Issuer") + "/v1/token?" + q.Encode()
 
 	req, _ := http.NewRequest("POST", url, bytes.NewReader([]byte("")))
 	h := req.Header
@@ -142,7 +142,7 @@ func getProfileData(r *http.Request) map[string]string {
 		return m
 	}
 
-	reqUrl := os.Getenv("ISSUER") + "/v1/userinfo"
+	reqUrl := viper.GetString("Issuer") + "/v1/userinfo"
 
 	req, _ := http.NewRequest("GET", reqUrl, bytes.NewReader([]byte("")))
 	h := req.Header
@@ -171,9 +171,9 @@ func isAuthenticated(r *http.Request) bool {
 func verifyToken(t string) (*verifier.Jwt, error) {
 	tv := map[string]string{}
 	tv["nonce"] = nonce
-	tv["aud"] = os.Getenv("CLIENT_ID")
+	tv["aud"] = viper.GetString("iClientId")
 	jv := verifier.JwtVerifier{
-		Issuer:           os.Getenv("ISSUER"),
+		Issuer:           viper.GetString("Issuer"),
 		ClaimsToValidate: tv,
 	}
 

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 	"poc/internal/model"
 	"time"
@@ -18,8 +17,6 @@ func RegisterAppApi(router *mux.Router) {
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-
-	log.Println("Home handler executed")
 	type customData struct {
 		Profile         map[string]string
 		IsAuthenticated bool

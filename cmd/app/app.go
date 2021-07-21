@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 	"log"
 	"net/http"
+	"os"
 	"poc/internal/api"
 	"time"
 )
@@ -44,19 +46,16 @@ func buildAndRunServer() {
 	originsOk := handlers.AllowedOrigins([]string{"*"})
 	handlers.CORS(originsOk)(router)
 
-	//router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	//	w.Write([]byte("This is a catch-all route"))
-	//})
-	//logHandler := handlers.LoggingHandler(os.Stdout, router)
+	requestHandler := handlers.LoggingHandler(os.Stdout, router)
+	serverPort :=  viper.GetString("Port")
 
-	log.Println("Starting server on port 8080")
+	log.Printf("Starting server on port %v", serverPort)
 	srv := &http.Server{
-		Handler:      router,
-		Addr:         ":8080",
+		Handler:      requestHandler,
+		Addr:         fmt.Sprintf(":%v", serverPort),
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
-	//log.Fatal(srv.ListenAndServe(), logHandler)
 	log.Fatal(srv.ListenAndServe())
 }
 

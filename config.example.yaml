@@ -1,0 +1,5 @@
+ClientId:
+ClientSecret:
+Issuer: https://<ISSUER_URI>.com
+Port:
+RedirectUrl: http://<AUTHORIZATION_CALLBACK_URL>
